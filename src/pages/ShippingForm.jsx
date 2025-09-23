@@ -1,15 +1,79 @@
-import { Link, useParams } from "react-router-dom";
-import products from "../data/products";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { getProductById } from "../services/product";
+import axios from "axios";
 
 function ShippingForm() {
   const { id } = useParams();
-  const product = products.find((p) => p.id === parseInt(id));
+  const navigate = useNavigate();
 
-  if (!product) {
+  const [product, setProduct] = useState(null);
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch product dari API
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const data = await getProductById(id);
+        setProduct(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        "http://localhost:1109/order",
+        {
+          productId: product.id,
+          shippingAddress,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      alert("✅ Order berhasil dibuat!");
+      navigate("/products"); // redirect ke halaman orders
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.error || "Failed to create order");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (error || !product) {
     return (
       <div className="min-h-screen flex items-center justify-center text-center">
         <div>
-          <h2 className="text-2xl font-bold text-red-500">Product not found</h2>
+          <h2 className="text-2xl font-bold text-red-500">
+            {error || "Product not found"}
+          </h2>
           <Link
             to="/products"
             className="mt-6 inline-block bg-primary text-white py-2 px-6 rounded-lg font-semibold hover:bg-opacity-90"
@@ -35,16 +99,12 @@ function ShippingForm() {
               </p>
             </div>
 
-            <form action="#" className="mt-8 space-y-6" method="POST">
+            <form onSubmit={handleSubmit} className="mt-8 space-y-6">
               <div className="rounded-lg space-y-4">
                 <div>
-                  <label className="font-medium text-sm" htmlFor="product-name">
-                    Product Name
-                  </label>
+                  <label className="font-medium text-sm">Product Name</label>
                   <input
                     className="form-input w-full mt-2 px-4 py-3 rounded-lg"
-                    id="product-name"
-                    name="product-name"
                     type="text"
                     value={product.name}
                     readOnly
@@ -52,29 +112,20 @@ function ShippingForm() {
                 </div>
 
                 <div>
-                  <label className="font-medium text-sm" htmlFor="price">
-                    Price
-                  </label>
-                  <div className="mt-2 relative rounded-lg">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
-                      <span className="text-gray-500 sm:text-sm">Rp</span>
-                    </div>
-                    <input
-                      className="form-input w-full pl-10 pr-12 py-3 rounded-lg"
-                      id="price"
-                      name="price"
-                      type="text"
-                      value={product.price}
-                      readOnly
-                    />
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                      <span className="text-gray-500 sm:text-sm">IDR</span>
-                    </div>
-                  </div>
+                  <label className="font-medium text-sm">Price</label>
+                  <input
+                    className="form-input w-full mt-2 px-4 py-3 rounded-lg"
+                    type="text"
+                    value={`Rp ${product.price}`}
+                    readOnly
+                  />
                 </div>
 
                 <div>
-                  <label className="font-medium text-sm" htmlFor="shipping-address">
+                  <label
+                    className="font-medium text-sm"
+                    htmlFor="shipping-address"
+                  >
                     Shipping Address
                   </label>
                   <input
@@ -84,9 +135,13 @@ function ShippingForm() {
                     placeholder="1234 Main St, Anytown, USA"
                     required
                     type="text"
+                    value={shippingAddress}
+                    onChange={(e) => setShippingAddress(e.target.value)}
                   />
                 </div>
               </div>
+
+              {error && <p className="text-red-500 text-sm">{error}</p>}
 
               <div className="space-y-2">
                 <Link
@@ -96,10 +151,11 @@ function ShippingForm() {
                   Cancel
                 </Link>
                 <button
+                  disabled={submitting}
                   className="w-full group relative flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300"
                   type="submit"
                 >
-                  Buy
+                  {submitting ? "Processing..." : "Buy"}
                 </button>
               </div>
             </form>
