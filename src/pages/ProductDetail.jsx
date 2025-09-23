@@ -1,6 +1,7 @@
 import { getProductById } from "../services/product";
 import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import apiUrl from "../services/apiUrl";
 
 export default function ProductDetail() {
   const [product, setProduct] = useState(null);
@@ -76,7 +77,7 @@ export default function ProductDetail() {
           <div className="w-full lg:sticky lg:top-32 self-start">
             <div className="bg-subtle-light dark:bg-subtle-dark rounded-lg overflow-hidden lg:sticky lg:top-16">
               <img
-                src={`http://localhost:1109/${product.imageUrl.replace(/\\/g, "/")}`}
+                src={`${apiUrl}/${product.imageUrl.replace(/\\/g, "/")}`}
                 alt={product.name}
                 className="w-full h-[500px] object-cover rounded-xl shadow-lg "
               />

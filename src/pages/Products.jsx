@@ -1,6 +1,7 @@
 import ProductCard from "../components/ProductCard";
 import { getProducts } from "../services/product";
 import { useEffect, useState } from "react";
+import apiUrl from "../services/apiUrl";
 
 function Products() {
   const [products, setProducts] = useState([]); // <-- state untuk produk
@@ -39,7 +40,7 @@ function Products() {
               id={p.id}
               name={p.name}
               price={p.price}
-              image={`http://localhost:1109/${p.imageUrl.replace(/\\/g, "/")}`}
+              image={`${apiUrl}/${p.imageUrl.replace(/\\/g, "/")}`}
             />
           ))}
         </div>

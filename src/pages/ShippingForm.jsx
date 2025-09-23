@@ -2,6 +2,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getProductById } from "../services/product";
 import axios from "axios";
+import apiUrl from "../services/apiUrl";
 
 function ShippingForm() {
   const { id } = useParams();
@@ -36,7 +37,7 @@ function ShippingForm() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        "http://localhost:1109/order",
+        `${apiUrl}/order`,
         {
           productId: product.id,
           shippingAddress,
