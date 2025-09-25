@@ -63,7 +63,7 @@ export default function Navbar() {
                   localStorage.removeItem("token");
                   setIsLoggedIn(false);
                 }}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-red-500 text-white hover:bg-red-600"
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-gray-500 text-white hover:bg-gray-600"
               >
                 Logout
               </button>
